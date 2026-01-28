@@ -13,7 +13,7 @@ The task is **multiclass classification** into 5 diagnostic superclasses:
 - **CD** – Conduction Disturbance
 
 ## 📂 Repository Structure
-
+```
 ├── artifacts/
 │ ├── ptbxl_train.csv
 │ ├── ptbxl_val.csv
@@ -50,7 +50,7 @@ The task is **multiclass classification** into 5 diagnostic superclasses:
 ├── requirements.txt
 ├── .gitignore
 └── README.md
-
+```
 Structure after downloading PTB-XL
 and running all of the codes 
 
