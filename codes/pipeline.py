@@ -35,34 +35,26 @@ db_labeled = label_builder.transform(db)
 
 
 def custom_patient_split(df, val_prop=0.15, test_prop=0.15, random_state=42):
-    """
-    df: DataFrame po zbudowaniu etykiet (ma kolumny: patient_id, validated_by_human, label)
-    Zwraca: train_df, val_df, test_df
-    """
     rng = np.random.default_rng(random_state)
     total_n = len(df)
 
-    # --- 1. Statystyki po pacjencie ---
-    # ile badań ma każdy pacjent i czy wszystkie są zwalidowane
+    #statystyki po pacjencie
     patient_stats = df.groupby("patient_id")["validated_by_human"].agg(
         n_rows="count",
         min_val="min",
         max_val="max"
     )
-    # all_valid = min == max == 1 (przyjmujemy, że validated_by_human jest 0/1)
+    # all_valid = min == max == 1 
     patient_stats["all_validated"] = (patient_stats["min_val"] == 1)
 
     # A: tylko pacjenci, gdzie każde badanie ma validated_by_human == 1
     A = patient_stats[patient_stats["all_validated"]].copy()
-    # B: reszta (przynajmniej jedno badanie niezwalidowane)
+    # B: reszta
     B = patient_stats[~patient_stats["all_validated"]].copy()
 
-    # --- 2. Wyznacz liczbę badań w val+test ---
     target_val_test = int(round((val_prop + test_prop) * total_n))
     target_val = int(round(val_prop * total_n))
-    # target_test wyjdzie z tego co zostanie
 
-    # --- 3. Wybór podzbioru S spośród A tak, aby zsumowane n_rows ≈ 30% ---
     patients_A = A.index.to_numpy()
     rng.shuffle(patients_A)
 
@@ -77,7 +69,6 @@ def custom_patient_split(df, val_prop=0.15, test_prop=0.15, random_state=42):
             break
 
     S = np.array(S)
-    # --- 4. Podział S na val i test pacjentowo, z równą liczbą badań ---
     rng.shuffle(S)
 
     val_patients = []
@@ -98,22 +89,17 @@ def custom_patient_split(df, val_prop=0.15, test_prop=0.15, random_state=42):
     test_patients = set(test_patients)
     S_set = set(S)
 
-    # --- 5. Train = wszyscy pozostali pacjenci (A \ S) ∪ B ---
     all_patients = set(patient_stats.index)
     train_patients = (all_patients - S_set)
 
-    # --- 6. Składamy zbiory danych ---
     train_df = df[df["patient_id"].isin(train_patients)].copy()
     val_df   = df[df["patient_id"].isin(val_patients)].copy()
     test_df  = df[df["patient_id"].isin(test_patients)].copy()
 
-    # --- 7. Kontrole sanity-check ---
-    # brak nakładania pacjentów
     assert len(set(train_df.patient_id) & set(val_df.patient_id)) == 0
     assert len(set(train_df.patient_id) & set(test_df.patient_id)) == 0
     assert len(set(val_df.patient_id) & set(test_df.patient_id)) == 0
 
-    # w val i test wszystkie badania zwalidowane
     assert val_df["validated_by_human"].min() == 1
     assert test_df["validated_by_human"].min() == 1
 
@@ -122,7 +108,7 @@ def custom_patient_split(df, val_prop=0.15, test_prop=0.15, random_state=42):
     print("test:",test_df["validated_by_human"].mean())
     print("train:",train_df["validated_by_human"].mean())
 
-    # info diagnostyczne
+    #info diagnostyczne
     print(f"Total rows: {total_n}")
     print(f"Train rows: {len(train_df)} ({len(train_df)/total_n:.2%})")
     print(f"Val   rows: {len(val_df)} ({len(val_df)/total_n:.2%})")
@@ -138,9 +124,7 @@ def custom_patient_split(df, val_prop=0.15, test_prop=0.15, random_state=42):
 train_df, val_df, test_df = custom_patient_split(db_labeled, val_prop=0.15, test_prop=0.15, random_state=42)
 
 
-# ===============================
-# SAVE SPLITS TO CSV
-# ===============================
+#zapisanie do csv
 ARTIFACTS_DIR = os.path.join(PROJECT_ROOT_DIR, "artifacts")
 os.makedirs(ARTIFACTS_DIR, exist_ok=True)
 
