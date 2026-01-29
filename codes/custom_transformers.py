@@ -63,9 +63,7 @@ class ECGSignalLoader(BaseEstimator, TransformerMixin):
     """
     Input:  DataFrame z kolumną filename_lr
     Output: numpy array o kształcie (n_records, n_leads, n_samples)
-            czyli tensor gotowy np. pod modele DL.
-
-    Opcjonalnie można wybrać podzbiór odprowadzeń po nazwie (lead_names).
+            czyli tensor gotowy pod modele DL
     """
 
     def __init__(self, ptb_dir, filename_col="filename_lr", lead_names=None):
@@ -74,10 +72,6 @@ class ECGSignalLoader(BaseEstimator, TransformerMixin):
         self.lead_names = lead_names  # np. ["I", "II", "V1"] albo None = wszystkie
 
     def fit(self, X, y=None):
-        """
-        Jeżeli chcemy wybierać konkretne odprowadzenia po nazwie,
-        to w fit zapamiętamy indeksy tych odprowadzeń na podstawie pierwszego rekordu.
-        """
         if self.lead_names is not None:
             first_path = os.path.join(self.ptb_dir, X[self.filename_col].iloc[0])
             sig, info = wfdb.rdsamp(first_path)
@@ -94,16 +88,16 @@ class ECGSignalLoader(BaseEstimator, TransformerMixin):
             path = os.path.join(self.ptb_dir, fname)
             sig, info = wfdb.rdsamp(path)   # sig: (n_samples, n_leads)
 
-            # wybór konkretnych odprowadzeń (jeśli ustawione)
+            #wybór konkretnych odprowadzeń
             if self.lead_indices_ is not None:
                 sig = sig[:, self.lead_indices_]
 
-            # chcemy (n_leads, n_samples), więc transpozycja:
+            #(n_leads, n_samples)
             sig = sig.T
 
             signals.append(sig)
 
-        # kształt: (n_records, n_leads, n_samples)
+        #kształt: (n_records, n_leads, n_samples)
         X_out = np.stack(signals, axis=0)
         return X_out
     
@@ -177,27 +171,23 @@ class ECGGlobalStandardizer(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         X = np.asarray(X)
-        # średnia i std per lead po wszystkich rekordach i po czasie
-        # axis=(0,2) -> agregujemy po rekordach i po czasie, zostaje (n_leads,)
         self.mean_ = X.mean(axis=(0, 2))
         self.std_ = X.std(axis=(0, 2)) + self.eps
         return self
 
     def transform(self, X, y=None):
         X = np.asarray(X)
-        mean = self.mean_[None, :, None]  # broadcast: (1, n_leads, 1)
+        mean = self.mean_[None, :, None] 
         std = self.std_[None, :, None]
         return (X - mean) / std
     
 
 class ECGAugmenter(BaseEstimator, TransformerMixin):
     """
-    Prosta augmentacja dla sygnału EKG:
+    Augmentacja dla sygnału EKG:
     - losowy Gaussian noise
     - losowe skalowanie amplitudy
     - losowe przesunięcie w czasie
-
-    Używaj TYLKO na zbiorze treningowym.
     """
 
     def __init__(
