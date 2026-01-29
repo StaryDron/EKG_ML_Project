@@ -68,7 +68,7 @@ shown in the repository structure
 
 pip install -r requirements.txt
 this includes torch 2.5.1+cu121 that makes use of the gpu
-if tou dont have a gpu, executing this project will take at least 12 hours.
+if you don't have a gpu, executing this project will take at least 12 hours.
 
 Run  files in the folowing order:
 
