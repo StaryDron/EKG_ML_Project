@@ -1,6 +1,6 @@
 # ECG Classification on PTB-XL using Deep Learning
 
-## 📌 Project Overview
+##  Project Overview
 
 This project focuses on **automatic classification of ECG signals** from the **PTB-XL dataset** using deep learning models.
 We build a **reproducible pipeline** including preprocessing, feature engineering (time derivatives), data augmentation, and multiple neural network architectures (ResNet1D, Inception-style models).
@@ -12,7 +12,7 @@ The task is **multiclass classification** into 5 diagnostic superclasses:
 - **HYP** – Hypertrophy
 - **CD** – Conduction Disturbance
 
-## 📂 Repository Structure
+##  Repository Structure
 ```
 ├── artifacts/
 │ ├── ptbxl_train.csv
