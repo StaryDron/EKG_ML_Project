@@ -55,7 +55,6 @@ def main():
     os.makedirs(OUT_DIR, exist_ok=True)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # 1. Ładowanie danych dla sieci neuronowych
     train_df = pd.read_csv(os.path.join(ART_DIR, "ptbxl_train.csv"))
     val_df = pd.read_csv(os.path.join(ART_DIR, "ptbxl_val.csv"))
     test_df = pd.read_csv(os.path.join(ART_DIR, "ptbxl_test.csv"))
@@ -65,7 +64,6 @@ def main():
     )
     loaders = {'train': train_l, 'val': val_l, 'test': test_l}
 
-    # 2. LISTA WSZYSTKICH 4 MODELI NN
     model_configs = [
         {'name': 'ResNet_Std', 'class': ResNet1D, 'path': 'resnet_standard/resnet1d_best.pt', 'ch': 24},
         {'name': 'ResNet_Aug', 'class': ResNet1D, 'path': 'resnet_augmented/resnet_aug_best.pt', 'ch': 24},
@@ -77,7 +75,6 @@ def main():
 
     metrics_list = []
 
-    # 3. Ewaluacja NN
     for cfg in model_configs:
         print(f"Ewaluacja: {cfg['name']}")
         model = cfg['class'](in_channels=cfg['ch'], n_classes=5).to(device)
@@ -95,13 +92,12 @@ def main():
         plot_curves(probs, trues, cfg['name'], os.path.join(OUT_DIR, f"{cfg['name']}_ROC.png"), 'ROC')
         plot_curves(probs, trues, cfg['name'], os.path.join(OUT_DIR, f"{cfg['name']}_PR.png"), 'PR')
 
-        # Wykresy uczenia z history.json
+        #wykresy uczenia z history.json
         hist_path = os.path.join(ART_DIR, os.path.dirname(cfg['path']), "history.json")
         if os.path.exists(hist_path):
             with open(hist_path, "r") as f:
                 h = json.load(f)
 
-            # Tworzymy wykres z dwiema osiami Y, ponieważ Loss i ROC mają inne skale
             fig, ax1 = plt.subplots(figsize=(10, 6))
 
             color_loss = 'tab:blue'
@@ -111,15 +107,12 @@ def main():
             ax1.tick_params(axis='y', labelcolor=color_loss)
             ax1.grid(alpha=0.3)
 
-            # Dodajemy drugą oś dla ROC-AUC
             if 'val_roc' in h:
                 ax2 = ax1.twinx()
                 color_roc = 'tab:orange'
                 ax2.set_ylabel('Validation ROC-AUC', color=color_roc)
                 ax2.plot(range(1, len(h['val_roc']) + 1), h['val_roc'], color=color_roc, lw=2, label='Val ROC-AUC')
                 ax2.tick_params(axis='y', labelcolor=color_roc)
-
-                # Ustawienie limitów dla ROC, żeby wykres był czytelny (np. 0.5 do 1.0)
                 ax2.set_ylim([min(h['val_roc']) - 0.05, 1.0])
 
             plt.title(f"Learning Progress: {cfg['name']}")
@@ -127,9 +120,8 @@ def main():
             plt.savefig(os.path.join(OUT_DIR, f"{cfg['name']}_history.png"), dpi=300)
             plt.close()
 
-    # 4. EWALUACJA BASELINE (Random Forest)
     print("Ewaluacja: Baseline_RF")
-    rf_model = joblib.load(os.path.join(ART_DIR, "baseline", "baseline_scaler.pkl"))  # Wczytuje scaler/model
+    rf_model = joblib.load(os.path.join(ART_DIR, "baseline", "baseline_scaler.pkl")) 
     rf_model = joblib.load(os.path.join(ART_DIR, "baseline", "baseline_rf_model.pkl"))
 
     rf_probs, rf_trues = {}, {}
@@ -149,7 +141,6 @@ def main():
     plot_curves(rf_probs, rf_trues, 'Baseline_RF', os.path.join(OUT_DIR, "Baseline_RF_PR.png"), 'PR')
 
     pd.DataFrame(metrics_list).to_csv(os.path.join(OUT_DIR, "final_metrics_report.csv"), index=False)
-    print(f"Sukces! Wyniki w: {OUT_DIR}")
 
 
 if __name__ == "__main__":
