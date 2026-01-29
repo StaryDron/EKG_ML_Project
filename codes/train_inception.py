@@ -28,7 +28,7 @@ def train_inception(use_aug):
     train_loader, val_loader, test_loader, _, info = make_dataloaders(
         train_df, val_df, test_df, ptb_dir=PTB_DIR,
         batch_size=128, num_workers=4,
-        use_derivative=True, use_augment=use_aug  # To jest kluczowa różnica
+        use_derivative=True, use_augment=use_aug  
     )
 
     model = InceptionTime1D(in_channels=info["in_channels"], n_classes=info["n_classes"]).to(device)
@@ -59,4 +59,4 @@ def train_inception(use_aug):
 
 
 if __name__ == "__main__":
-    train_inception(use_aug=False)  # Zmień na True w drugim pliku
+    train_inception(use_aug=False) 
