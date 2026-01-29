@@ -8,7 +8,6 @@ from tqdm import tqdm
 
 from sklearn.metrics import f1_score, roc_auc_score, average_precision_score
 
-# ---------- ResNet1D ----------
 class ResidualBlock1D(nn.Module):
     def __init__(self, in_ch, out_ch, stride=1, kernel_size=7):
         super().__init__()
@@ -86,7 +85,6 @@ class ResNet1D(nn.Module):
         return x
 
 
-# ---------- Train / Eval loops ----------
 def run_epoch(model, loader, criterion, optimizer=None, device="cpu", n_classes=5):
     train = optimizer is not None
     model.train() if train else model.eval()
@@ -133,23 +131,17 @@ def run_epoch(model, loader, criterion, optimizer=None, device="cpu", n_classes=
     avg_loss = total_loss / total_n
     acc = total_correct / total_n
 
-    # Na treningu nie musisz liczyć AUC/PR/F1 (wolne i mniej informacyjne)
     if train:
         return avg_loss, acc, None, None, None
 
-    # ---- eval metrics ----
-    y_true = np.concatenate(all_true, axis=0)           # (N,)
-    y_prob = np.concatenate(all_probs, axis=0)          # (N, K)
+    y_true = np.concatenate(all_true, axis=0)          
+    y_prob = np.concatenate(all_probs, axis=0)         
 
-    # F1 macro
     y_pred = y_prob.argmax(axis=1)
     f1_macro = f1_score(y_true, y_pred, average="macro")
 
-    # One-hot dla AUC/PR-AUC
-    y_true_oh = np.eye(n_classes)[y_true]               # (N, K)
+    y_true_oh = np.eye(n_classes)[y_true]              
 
-    # ROC AUC (macro, OVR) + PR AUC (macro)
-    # UWAGA: jeśli w walidacji/test brakuje jakiejś klasy, sklearn może rzucić wyjątek -> łapiemy
     try:
         roc_auc = roc_auc_score(y_true_oh, y_prob, average="macro", multi_class="ovr")
     except ValueError:
@@ -163,9 +155,7 @@ def run_epoch(model, loader, criterion, optimizer=None, device="cpu", n_classes=
     return avg_loss, acc, roc_auc, pr_auc, f1_macro
 
 
-# ---------- Main example ----------
 if __name__ == "__main__":
-    # import Twoich loaderów
     import pandas as pd
     from data_ptbxl import make_dataloaders
 
@@ -218,7 +208,6 @@ if __name__ == "__main__":
                 optimizer=None, device=device, n_classes=info["n_classes"]
             )
 
-        # NOWOŚĆ: Zbieranie danych do historii
         history["train_loss"].append(train_loss)
         history["train_acc"].append(train_acc)
         history["val_loss"].append(val_loss)
@@ -241,7 +230,7 @@ if __name__ == "__main__":
     with open(os.path.join(EXP_DIR, "history.json"), "w") as f:
         json.dump(history, f)
 
-    # test na najlepszym
+
     model.load_state_dict(torch.load(os.path.join(EXP_DIR, "resnet1d_best.pt"), map_location=device))
     test_loss, test_acc, test_roc, test_pr, test_f1 = run_epoch(
     model, test_loader, criterion, optimizer=None, device=device, n_classes=info["n_classes"])
