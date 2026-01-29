@@ -20,7 +20,6 @@ class ResidualBlock1D(nn.Module):
         self.conv2 = nn.Conv1d(out_ch, out_ch, kernel_size, stride=1, padding=padding, bias=False)
         self.bn2   = nn.BatchNorm1d(out_ch)
 
-        # dopasowanie skipa jeśli zmienia się liczba kanałów lub stride
         self.downsample = None
         if stride != 1 or in_ch != out_ch:
             self.downsample = nn.Sequential(
@@ -96,7 +95,6 @@ def run_epoch(model, loader, criterion, optimizer=None, device="cpu", n_classes=
     all_probs = []
     all_true = []
 
-    # Dodajemy tqdm do pętli po loaderze
     pbar = tqdm(enumerate(loader), total=len(loader), desc="Batch", leave=False)
 
     for i, (x, y) in pbar:
@@ -119,7 +117,6 @@ def run_epoch(model, loader, criterion, optimizer=None, device="cpu", n_classes=
         total_correct += (preds == y).sum().item()
         total_n += y.size(0)
 
-        # Aktualizacja paska postępu o aktualny loss
         current_loss = total_loss / total_n
         pbar.set_postfix(loss=f"{current_loss:.4f}")
 
