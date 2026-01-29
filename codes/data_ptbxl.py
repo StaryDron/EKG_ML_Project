@@ -53,12 +53,10 @@ def make_dataloaders(train_df, val_df, test_df, ptb_dir,
                      batch_size=64, num_workers=0,
                      use_derivative=False, use_augment=False):
 
-    # --- y encoding ---
     y_train = train_df["label"].map(label2id).to_numpy()
     y_val   = val_df["label"].map(label2id).to_numpy()
     y_test  = test_df["label"].map(label2id).to_numpy()
 
-    # --- preprocessing fit only on train ---
     pipe = build_signal_pipe(ptb_dir, use_derivative=use_derivative)
     X_train = pipe.fit_transform(train_df)  # (N,C,T)
     X_val   = pipe.transform(val_df)
