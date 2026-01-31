@@ -61,10 +61,10 @@ used by the code including models and charts.
 
 ##  How to run the project
 
-download the PTB-Xl database zip from:
-https://physionet.org/content/ptb-xl/1.0.3/
-unpack it and place in the exact position 
-shown in the repository structure
+unpack the PTB-XL.zip it contains a small demonstrative fraction
+of the database(only 100 ekg signals) and make sure that it is in the 
+exact position as shown in the repository structure after unpacking and
+that it has the same name.
 
 pip install -r requirements.txt
 this includes torch 2.5.1+cu121 that makes use of the gpu
