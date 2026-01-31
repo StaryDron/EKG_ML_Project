@@ -62,7 +62,7 @@ used by the code including models and charts.
 ##  How to run the project
 
 unpack the PTB-XL.zip it contains a small demonstrative fraction
-of the database(only 100 ekg signals) and make sure that it is in the 
+of the database(only 1000 ekg signals) and make sure that it is in the 
 exact position as shown in the repository structure after unpacking and
 that it has the same name.
 
